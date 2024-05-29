@@ -288,7 +288,6 @@ router.post("/login", function (req, res, next) {
             var salt = results.rows[0][2];
             var hashPassword = crypto.createHash("sha512").update(pw+salt).digest("base64");
 
-
             if (results.rows.length < 1) {
                 console.log("로그인 아이디가 없습니다!");
                 code = 1;
@@ -345,17 +344,28 @@ router.post("/updatesignup", function (req, res, next) {
     var password_check = req.body.password_check;
     var email = req.body.email;
     var code = 0;
+    console.log(id, name, email)
     if (pw !== password_check || pw.length == 0) {
-        return res.render("bbs/signup", {errcode: 3});
+        return res.render("bbs/updateUser", {
+            errcode: 3,
+            id: id,
+            name: name,
+            email: email
+        });
     }
     if (!name) {
-        return res.render("bbs/signup", {errcode: 4});
+        return res.render("bbs/updateUser", {
+            errcode: 4,
+            id: id,
+            name: name,
+            email: email
+        });
     }
-                var sql = `UPDATE BBSW SET WRITER='${req.body.brdwriter1}', CONTENT='${req.body.brdmemo1}' WHERE NO=${req.body.brdno1}`;
-
+    var salt = Math.round(new Date().valueOf()*Math.random()) + "";
+    var hashPassword = crypto.createHash("sha512").update(pw+salt).digest("base64");
 
     oracledb.getConnection(dbconfig, function (err, connection) {
-        var sql = `UPDATE LOGIN SET PW='${pw}', NAME='${name}', EMAIL='${email}' WHERE ID=${id}`;
+    var sql = `UPDATE LOGIN SET PASSWORD='${hashPassword}', NAME='${name}', EMAIL='${email}', SALT='${salt}'`;
         connection.execute(sql, function (err, rows) {
             if (err) {console.error(`err : ${err}`);}
 
