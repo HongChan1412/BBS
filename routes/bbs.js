@@ -365,9 +365,9 @@ router.post("/updatesignup", function (req, res, next) {
     var hashPassword = crypto.createHash("sha512").update(pw+salt).digest("base64");
 
     oracledb.getConnection(dbconfig, function (err, connection) {
-    var sql = `UPDATE LOGIN SET PASSWORD='${hashPassword}', NAME='${name}', EMAIL='${email}', SALT='${salt}'`;
+        var sql = `UPDATE LOGIN SET PASSWORD='${hashPassword}', NAME='${name}', EMAIL='${email}', SALT='${salt}'`;
         connection.execute(sql, function (err, rows) {
-            if (err) {console.error(`err : ${err}`);}
+            if (err) console.error(`err : ${err}`);
 
             res.redirect("/bbs/list");
             connection.release();
@@ -381,6 +381,23 @@ router.get("/logout", function (req, res, next) {
             res.redirect("/bbs/list");
         });
     }
+})
+
+router.get("/resign", function (req, res, next) {
+    id = req.session.user.id;
+    if (req.session) {
+        req.session.destroy(()=>{
+        });
+    }
+    oracledb.getConnection(dbconfig, function (err, connection) {
+        var sql = `DELETE FROM LOGIN WHERE ID='${id}'`;
+        connection.execute(sql, function (err, rows) {
+            if (err) console.error(`err : ${err}`);
+
+            res.redirect("/bbs/list");
+            connection.release();
+        });
+    });
 })
 
 module.exports = router;
