@@ -279,38 +279,36 @@ router.post("/login", function (req, res, next) {
     var pw = req.body.password;
     var code = 0;
     oracledb.getConnection(dbconfig, function (err, connection) {
-        var sql = `SELECT OK, PASSWORD, SALT FROM LOGIN WHERE ID = '${id}'`;
+        var sql = `SELECT OK, PASSWORD, SALT, NAME FROM LOGIN WHERE ID = '${id}'`;
 
         connection.execute(sql, function(err, results) {
             if (err) console.error(`err : ${err}`);
-
-            var dbhashPassword = results.rows[0][1];
-            var salt = results.rows[0][2];
-            var hashPassword = crypto.createHash("sha512").update(pw+salt).digest("base64");
 
             if (results.rows.length < 1) {
                 console.log("로그인 아이디가 없습니다!");
                 code = 1;
                 res.render("bbs/login", {errcode: code});
                 return;
-            } else if (dbhashPassword == hashPassword) {
-                const paramID = req.body.id || req.query.id;
-                const pwd = req.body.password || req.query.password;
-                if (req.session.user) {
-                    console.log("이미 로그인 되어 있습니다!");
-                } else {
-                    console.log("사용자 정보 저장!");
+            } else {
+                var dbhashPassword = results.rows[0][1];
+                var salt = results.rows[0][2];
+                var hashPassword = crypto.createHash("sha512").update(pw+salt).digest("base64");
+
+                if (dbhashPassword == hashPassword) {
+                    const paramID = req.body.id || req.query.id;
+                    const pwd = req.body.password || req.query.password;
+
                     req.session.user = {
                         id: paramID,
                         pwd: pwd,
+                        name: results.rows[0][3],
                         authorized: true
                     };
+                } else {
+                    code = 2;
+                    res.render("bbs/login", {errcode:code});
+                    return ;
                 }
-            } else {
-                console.log("패스워드가 틀렸습니다!");
-                code = 2;
-                res.render("bbs/login", {errcode:code});
-                return ;
             }
             res.redirect("/bbs/list");
             connection.release();
