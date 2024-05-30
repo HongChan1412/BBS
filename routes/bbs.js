@@ -99,7 +99,7 @@ router.get("/form", function (req, res, next) {
     var userId = req.session.user;
     if (userId) {
         if (!req.query.brdno) {
-            res.render("bbs/form", {rows: ""});
+            res.render("bbs/form", {rows: "", name: userId.name});
             return ;
         }
         oracledb.getConnection(dbconfig, function (err, connection) {
