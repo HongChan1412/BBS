@@ -124,7 +124,7 @@ router.post("/save", function (req, res, next) {
             if (req.body.brdno) {
                 var sql = `UPDATE BBS SET TITLE='${req.body.brdtitle}', CONTENT='${req.body.brdmemo}', WRITER='${req.body.brdwriter}' WHERE NO=${req.body.brdno}`;
             } else {
-                var sql = `INSERT INTO BBS(NO, TITLE, CONTENT, WRITER, REGDATE) VALUES(bbs_seq.nextval, '${req.body.brdtitle}', '${req.body.brdmemo}', '${req.body.brdwriter}', sysdate)`;
+                var sql = `INSERT INTO BBS(NO, TITLE, CONTENT, WRITER, REGDATE, ID) VALUES(bbs_seq.nextval, '${req.body.brdtitle}', '${req.body.brdmemo}', '${req.body.brdwriter}', sysdate, '${req.session.user.id}')`;
             }
 
             connection.execute(sql, function (err, rows) {
@@ -171,7 +171,7 @@ router.post("/write", function (req, res, next) {
         if (req.body.brdno1) {
             var sql = `UPDATE BBSW SET WRITER='${req.body.brdwriter1}', CONTENT='${req.body.brdmemo1}' WHERE NO=${req.body.brdno1}`;
         } else {
-            var sql = `INSERT INTO BBSW(NO, BBS_NO, WRITER, CONTENT) VALUES(bbsw_seq.nextval, '${req.body.bbs_no}', '${req.body.brdwriter1}', '${req.body.brdmemo1}')`;
+            var sql = `INSERT INTO BBSW(NO, BBS_NO, WRITER, CONTENT, ID) VALUES(bbsw_seq.nextval, '${req.body.bbs_no}', '${req.body.brdwriter1}', '${req.body.brdmemo1}', '${req.session.user.id}')`;
         }
 
         connection.execute(sql, function (err, rows) {
