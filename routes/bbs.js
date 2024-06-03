@@ -3,6 +3,10 @@ var router = express.Router();
 
 var crypto = require('crypto');
 var oracledb= require('oracledb');
+
+const multer = require('multer');
+const path = require("path");
+
 oracledb.autoCommit = true;
 
 var dbconfig = {  // DB 연결 설정
@@ -10,6 +14,31 @@ var dbconfig = {  // DB 연결 설정
     password : "1234",
     connectString : "localhost/XEPDB1"
 };
+
+const storage= multer.diskStorage({ function (req, file, cb) {
+    cb(null, "files/")
+    },
+    filename: function (req, file, cb) {
+    const originalName = file.originalname;
+    const now = new Date();
+
+    const timestamp = now.getFullYear() +
+        padZero(now.getMonth() + 1) +
+        padZero(now.getDate()) +
+        padZero(now.getHours()) +
+        padZero(now.getMinutes()) +
+        padZero(now.getSeconds());
+
+    const fileName = timestamp + '_' + originalName;
+    cb(null, fileName)
+    }
+});
+
+function padZero(num) {
+    return num < 10 ? "0" + num : num;
+}
+
+const upload = multer({ storage: storage });
 
 router.get("/", function (req, res, next) {
     res.redirect("/bbs/list");
@@ -87,7 +116,7 @@ router.get("/read", function (req, res, next) {
     }
 
     oracledb.getConnection(dbconfig, function (err, connection) {
-        var sql = `SELECT NO, TITLE, CONTENT, WRITER, to_char(REGDATE,'yyyy-mm-dd hh24:mi:ss'), READ_COUNT, ID FROM BBS WHERE NO=${req.query.brdno}`;
+        var sql = `SELECT NO, TITLE, CONTENT, WRITER, to_char(REGDATE,'yyyy-mm-dd hh24:mi:ss'), READ_COUNT, ID, FILENAME FROM BBS WHERE NO=${req.query.brdno}`;
 
         connection.execute(sql, function (err, rows) {
             if (err) console.error(`err : ${err}`);
@@ -121,13 +150,23 @@ router.get("/form", function (req, res, next) {
     }
 });
 
-router.post("/save", function (req, res, next) {
+router.post("/save", upload.single("image"), function (req, res, next) {
+    console.log("123")
     if (req.session.user) {
         oracledb.getConnection(dbconfig, function (err, connection) {
             if (req.body.brdno) {
                 var sql = `UPDATE BBS SET TITLE='${req.body.brdtitle}', CONTENT='${req.body.brdmemo}', WRITER='${req.body.brdwriter}' WHERE NO=${req.body.brdno}`;
             } else {
-                var sql = `INSERT INTO BBS(NO, TITLE, CONTENT, WRITER, REGDATE, ID) VALUES(bbs_seq.nextval, '${req.body.brdtitle}', '${req.body.brdmemo}', '${req.body.brdwriter}', sysdate, '${req.session.user.id}')`;
+                console.log(req)
+                if (req.file) {
+                    var fileName = req.file.filename;
+                    var filePath = `files/${fileName}`;
+
+                    var sql = `INSERT INTO BBS(NO, TITLE, CONTENT, WRITER, REGDATE, ID, FIlENAME, FILEPATH) VALUES(bbs_seq.nextval, '${req.body.brdtitle}', '${req.body.brdmemo}', '${req.body.brdwriter}', sysdate, '${req.session.user.id}', '${fileName}', '${filePath}')`;
+                    console.log(sql)
+                } else {
+                    var sql = `INSERT INTO BBS(NO, TITLE, CONTENT, WRITER, REGDATE, ID) VALUES(bbs_seq.nextval, '${req.body.brdtitle}', '${req.body.brdmemo}', '${req.body.brdwriter}', sysdate, '${req.session.user.id}')`;
+                }
             }
 
             connection.execute(sql, function (err, rows) {

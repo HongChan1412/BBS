@@ -7,7 +7,7 @@
 </head>
 <body>
         <br>
-        <form name="form1" action="/bbs/save" method="post">
+        <form name="form1" action="/bbs/save" method="post" enctype="multipart/form-data">
             <table class="table"  style="width: 80%; margin: auto;">
                 <tbody>
                     <tr>
@@ -21,6 +21,10 @@
                     <tr>
                         <td>내용</td>
                         <td><textarea name="brdmemo" rows="5" cols="60"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td>파일</td>
+                        <td><input type="file" name="image" accept="image/*"></td>
                     </tr>
                 </tbody>
             </table>
