@@ -32,9 +32,8 @@ async function countRecord() {
 
 router.get("/list", function (req, res, next) {
     var stNum = 0, totalRecords = 0, totalPage = 0, firstPage = 0, lastPage = 0, currentPage = 1, blockSize = 5, pageSize = 5;
-    var userId = req.session.user;
     var isLoggedIn = false;
-    if (userId) {
+    if (req.session.user) {
         isLoggedIn = true;
     }
     countRecord().then( function (totalRecords) {
@@ -80,16 +79,20 @@ router.get("/read", function (req, res, next) {
         });
     });
 
+    var isLoggedIn = false;
+    var id = null;
+    if (req.session.user) {
+        isLoggedIn = true;
+        id = req.session.user.id;
+    }
+
     oracledb.getConnection(dbconfig, function (err, connection) {
         var sql = `SELECT NO, TITLE, CONTENT, WRITER, to_char(REGDATE,'yyyy-mm-dd hh24:mi:ss'), READ_COUNT, ID FROM BBS WHERE NO=${req.query.brdno}`;
 
         connection.execute(sql, function (err, rows) {
             if (err) console.error(`err : ${err}`);
-            console.log(rows.rows)
-            if (req.session.user) {
-                rows.rows[0][7] = req.session.user.id;
-            }
-            res.render("bbs/read", rows);
+
+            res.render("bbs/read", {rows: rows.rows, id: id, isLoggedIn: isLoggedIn});
             connection.release();
         });
     });
@@ -154,13 +157,21 @@ router.get("/delete", function (req, res, next) {
 });
 
 router.get("/wlist", function (req, res, next) {
+    var isLoggedIn = false;
+    var name = null;
+    var id = null;
+    if (req.session.user) {
+        isLoggedIn = true;
+        name = req.session.user.name
+    }
+
     oracledb.getConnection(dbconfig, function (err, connection) {
-        var sql = `SELECT NO, BBS_NO, WRITER, CONTENT, to_char(REGDATE,'yyyy-mm-dd hh24:mi:ss') FROM BBSW WHERE BBS_NO=${req.query.bbs_no} ORDER BY NO ASC`;
+        var sql = `SELECT NO, BBS_NO, WRITER, CONTENT, to_char(REGDATE,'yyyy-mm-dd hh24:mi:ss'), ID FROM BBSW WHERE BBS_NO=${req.query.bbs_no} ORDER BY NO ASC`;
         connection.execute(sql, function (err, rows) {
             if (err) console.error(`err : ${err}`);
 
             var brdNo = req.query.bbs_no;
-            res.render("bbs/write", {rows:rows, brdNo:brdNo});
+            res.render("bbs/write", {rows:rows, brdNo:brdNo, isLoggedIn: isLoggedIn, name: name, id: id});
             connection.release();
         });
     });

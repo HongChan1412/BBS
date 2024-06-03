@@ -34,8 +34,18 @@
                                 <td><%=column[2]%></td>
                                 <td><%=column[3]%></td>
                                 <td><%=column[4]%></td>
-                                <td><a href="/bbs/wform?brdno1=<%=column[0]%>">수정</a></td>
-                                <td><a onclick="return confirm('정말로 삭제하겠습니까?')" href="/bbs/wdelete?brdno1=<%=column[0]%>&bbs_no=<%=column[1]%>">삭제</a> </td>
+                                <% if (isLoggedIn) { %>
+                                    <% if (id == column[5]) { %>
+                                        <td><a href="/bbs/wform?brdno1=<%=column[0]%>">수정</a></td>
+                                        <td><a onclick="return confirm('정말로 삭제하겠습니까?')" href="/bbs/wdelete?brdno1=<%=column[0]%>&bbs_no=<%=column[1]%>">삭제</a> </td>
+                                    <% } else { %>
+                                        <td><a href="javascript:alert('수정 권한이 없습니다.')">수정</a></td>
+                                        <td><a href="javascript:alert('삭제 권한이 없습니다.')">수정</a></td>
+                                    <% } %>
+                                <% } else { %>
+                                    <td><a href="/bbs/login">수정</a></td>
+                                    <td><a href="/bbs/login">삭제</a></td>
+                                <% } %>
                             </tr>
                         <%
                                 }
@@ -48,11 +58,19 @@
                     <hr>
                     <p>댓글 입력</p>
                     <div class="input_group">
-                        <textarea type="text" class="form-control" placeholder="작성자" name="brdwriter1" maxlength="10" rows="2" cols="10"></textarea>
+                        <% if (isLoggedIn) { %>
+                            <textarea type="text" class="form-control" name="brdwriter1" maxlength="10" rows="2" cols="10", readonly><%=name%></textarea>
+                        <% } else { %>
+                            <textarea type="text" class="form-control" placeholder="작성자" name="brdwriter1" maxlength="10" rows="2" cols="10"></textarea>
+                        <% } %>
                         <textarea type="text" class="form-control" placeholder="댓글을 입력하세요" name="brdmemo1" maxlength="80" rows="2" cols="85"></textarea>
                         <div class="input-group-btn">
                             <br>
-                            <input type="reset" value="저장" onclick="form2.submit()" class="btn btn-primary pull-right"/>
+                            <% if (isLoggedIn) { %>
+                                <input type="reset" value="저장" onclick="form2.submit()" class="btn btn-primary pull-right"/>
+                            <% } else { %>
+                                <a href="/bbs/login" class="btn btn-primary pull-right">저장</a>
+                            <% } %>
                             <a href="/bbs/read?brdno=<%=brdNo%>" class="btn btn-primary pull-right">게시글로 이동</a>
                             <input type="hidden" name="bbs_no" value="<%=brdNo%>">
                         </div>

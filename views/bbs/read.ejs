@@ -40,13 +40,18 @@
             <div class="input-group-btn">
                 <p>
                     <a href="/bbs/list" class="btn btn-primary pull-right">돌아가기</a>
-                    <% if (column[6] == column[7]) { %>
-                        <a href="/bbs/form?brdno=<%=column[0]%>" class="btn btn-primary pull-right">수정</a>
-                        <a onclick="return confirm('정말로 삭제하겠습니까?')" href="/bbs/delete?brdno=<%=column[0]%>" class="btn btn-primary pull-right">삭제</a>
+                    <% if (isLoggedIn) { %>
+                        <% if (column[6] == id) { %>
+                            <a href="/bbs/form?brdno=<%=column[0]%>" class="btn btn-primary pull-right">수정</a>
+                            <a onclick="return confirm('정말로 삭제하겠습니까?')" href="/bbs/delete?brdno=<%=column[0]%>" class="btn btn-primary pull-right">삭제</a>
+                        <% } else { %>
+                            <a href="javascript:alert('수정 권한이 없습니다.')" class="btn btn-primary pull-right">수정️</a>
+                            <a href="javascript:alert('삭제 권한이 없습니다.')" class="btn btn-primary pull-right">삭제</a>
+                        <% } %>
                     <% } else { %>
-                        <a href="javascript:alert('수정 권한이 없습니다.')" class="btn btn-primary pull-right">수정️</a>
-                        <a href="javascript:alert('삭제 권한이 없습니다.')" class="btn btn-primary pull-right">삭제</a>
-                    <% }%>
+                        <a href="/bbs/login" class="btn btn-primary pull-right">수정️</a>
+                        <a href="/bbs/login" class="btn btn-primary pull-right">삭제</a>
+                    <% } %>
                 </p>
                 <div>
                     <hr>
